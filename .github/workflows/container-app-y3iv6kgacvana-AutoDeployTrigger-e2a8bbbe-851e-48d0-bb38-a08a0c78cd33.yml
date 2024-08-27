@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-y3iv6kgacvana
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/container-app-y3iv6kgacvana-AutoDeployTrigger-e2a8bbbe-851e-48d0-bb38-a08a0c78cd33.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPY3IV6KGACVANA_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPY3IV6KGACVANA_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPY3IV6KGACVANA_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: defaultacrcontainerregistrya013.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPY3IV6KGACVANA_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPY3IV6KGACVANA_REGISTRY_PASSWORD }}
+          containerAppName: container-app-y3iv6kgacvana
+          resourceGroup: flaskbasicae80a65a
+          imageToBuild: defaultacrcontainerregistrya013.azurecr.io/container-app-y3iv6kgacvana:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
